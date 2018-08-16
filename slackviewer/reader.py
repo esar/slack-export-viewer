@@ -17,7 +17,6 @@ class Reader(object):
         with io.open(os.path.join(self._PATH, "metadata.json")) as f:
             metadata = json.load(f)
             for id,name in metadata['users'].items():
-              print("ID: %s, Name: %s" % (id, name))
               self.__USER_DATA[id] = {'name': name}
 
         #with io.open(os.path.join(self._PATH, "users.json"), encoding="utf8") as f:
@@ -50,7 +49,6 @@ class Reader(object):
     def compile_dm_messages(self):
         dm_names = os.listdir(os.path.join(self._PATH, 'direct_messages'))
         dm_names = [os.path.splitext(x)[0] for x in dm_names]
-        print(dm_names)
         return self._create_messages('direct_messages', dm_names, None, True)
 
         ## Gets list of dm objects with dm ID and array of members ids
@@ -78,12 +76,10 @@ class Reader(object):
         dm_names = [os.path.splitext(x)[0] for x in dm_names]
         all_dm_users = []
         for name in dm_names:
-          print("dm_name: %s" % name)
           with open(os.path.join(self._PATH, 'direct_messages', name + '.json')) as f:
             channel_info = json.load(f)['channel_info']
             members = [self.__USER_DATA[m] for m in channel_info["members"]]
             all_dm_users.append({'id': name, 'users': members})
-        print("users: %s" % (all_dm_users))
         return all_dm_users
 
         #dm_data = self._read_from_json("dms.json")
@@ -184,7 +180,6 @@ class Reader(object):
                 with io.open(os.path.join(self._PATH, dir, day + '.json')) as f: #, encoding="utf8") as f:
                     # loads all messages
                     day_messages = json.load(f)
-                    print("Reading %s" % day)
                     messages.extend([Message(self.__USER_DATA, data, d) for d in day_messages['messages']])
 
             chats[name] = messages
