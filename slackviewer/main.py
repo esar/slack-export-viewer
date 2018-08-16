@@ -15,7 +15,7 @@ def configure_app(app, archive, debug):
         print("WARNING: DEBUG MODE IS ENABLED!")
     app.config["PROPAGATE_EXCEPTIONS"] = True
 
-    path = extract_archive(archive)
+    path = archive #extract_archive(archive)
     reader = Reader(path)
 
     top = flask._app_ctx_stack
