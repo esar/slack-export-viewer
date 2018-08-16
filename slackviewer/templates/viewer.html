@@ -8,6 +8,12 @@
 </head>
 <body>
 <div id="sidebar">
+    <h3 id="search">Search</h3>
+    <form action="/" method="POST">
+        <input name="pattern" value="{{ pattern }}"/>
+        <input type="submit"/>
+    </form>
+
     <h3 id="channel-title">Public Channels</h3>
     <ul class="list" id="channel-list">
         {% for channel in channels %}

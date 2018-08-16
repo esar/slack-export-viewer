@@ -90,6 +90,10 @@ class Message(object):
         return "<br />".join(message).strip()
 
     @property
+    def raw(self):
+        return self._message.get("text")
+
+    @property
     def img(self):
         try:
             return self.__USER_DATA[self._message["user"]]["profile"]["image_72"]
