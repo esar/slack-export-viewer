@@ -92,7 +92,7 @@ def search_post():
     matches = []
     pattern = flask.request.form['pattern']
     if len(pattern) > 0:
-      regex = re.compile(pattern)
+      regex = re.compile(pattern, re.IGNORECASE)
       for channel in flask._app_ctx_stack.channels.values():
           for message in channel:
               if regex.search(message.raw):
