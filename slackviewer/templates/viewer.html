@@ -59,14 +59,21 @@
     </ul>
 </div>
 <div class="messages">
+    {% set ns = namespace(last_channel=None) %}
     {% for message in messages %}
         <div class="message-container">
+         {% if pattern and message.channel != ns.last_channel %}
+             <div class="search-channel">
+                 {{ message.type }}/{{ message.channel }}
+             </div>
+             {% set ns.last_channel = message.channel %}
+         {% endif %}
           <div id="{{ message.id }}">
             <img src="{{ message.img }}"/>
             <div class="message">
                 <div class="username">{{ message.username }}</div>
-                <a href="#{{ message.id}}"><div class="time">{{ message.time }}</div></a>
-                <div class="msg">{{ message.msg|safe }}</div>
+                <a href="/{{ message.type }}/{{ message.channel }}/#{{ message.id}}"><div class="time">{{ message.time }}</div></a>
+                <div class="msg">{{ message.highlighted_msg(regex)|safe if pattern else message.msg|safe }}</div>
             </div>
           </div>
         </div>

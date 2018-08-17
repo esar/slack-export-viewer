@@ -9,14 +9,25 @@ import markdown2
 
 
 class Message(object):
-    def __init__(self, USER_DATA, CHANNEL_DATA, message):
+    def __init__(self, USER_DATA, CHANNEL_DATA, type, channel, message):
         self.__USER_DATA = USER_DATA
         self.__CHANNEL_DATA = CHANNEL_DATA
+        self._type = type
+        self._channel = channel
         self._message = message
+        self._highlight_regex = None
 
     ##############
     # Properties #
     ##############
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def channel(self):
+        return self._channel
 
     @property
     def user_id(self):
@@ -42,6 +53,12 @@ class Message(object):
                 return None
 
     @property
+    def datetime(self):
+        # Handle this: "ts": "1456427378.000002"
+        tsepoch = float(self._message["ts"].split(".")[0])
+        return datetime.datetime.fromtimestamp(tsepoch)
+
+    @property
     def time(self):
         # Handle this: "ts": "1456427378.000002"
         tsepoch = float(self._message["ts"].split(".")[0])
@@ -54,6 +71,8 @@ class Message(object):
         text = self._message.get("text")
         if text:
             text = self._render_text(text)
+            if self._highlight_regex:
+                text = self._highlight_regex.sub('<span class="search-highlight">\\g<0></span>', text)
             message.append(text)
 
         attachments = self._message.get("attachments", [])
@@ -103,6 +122,13 @@ class Message(object):
     @property
     def id(self):
         return self.time
+
+    def highlighted_msg(self, regex):
+        self._highlight_regex = regex
+        result = self.msg
+        self._highlight_regex = None
+        return result
+
 
     ###################
     # Private Methods #

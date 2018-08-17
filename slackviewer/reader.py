@@ -11,6 +11,10 @@ class Reader(object):
     """
 
     def __init__(self, PATH):
+        self._DIRS = {'channel': 'channels',
+                      'group':   'private_channels',
+                      'dm':      'direct_messages',
+                      'mpim':    'private_channels'}
         self._PATH = PATH
         # TODO: Make sure this works
         self.__USER_DATA = {}
@@ -34,7 +38,7 @@ class Reader(object):
         #channel_data = self._read_from_json("channels.json")
         #channel_names = [c["name"] for c in channel_data.values()]
 
-        return self._create_messages('channels', channel_names, {}) #channel_data)
+        return self._create_messages('channel', channel_names, {}) #channel_data)
 
     def compile_groups(self):
         group_names = os.listdir(os.path.join(self._PATH, 'private_channels'))
@@ -44,12 +48,12 @@ class Reader(object):
         #group_data = self._read_from_json("groups.json")
         #group_names = [c["name"] for c in group_data.values()]
 
-        return self._create_messages('private_channels', group_names, {}) #group_data)
+        return self._create_messages('group', group_names, {}) #group_data)
 
     def compile_dm_messages(self):
         dm_names = os.listdir(os.path.join(self._PATH, 'direct_messages'))
         dm_names = [os.path.splitext(x)[0] for x in dm_names]
-        return self._create_messages('direct_messages', dm_names, {}, True)
+        return self._create_messages('dm', dm_names, {})
 
         ## Gets list of dm objects with dm ID and array of members ids
         #dm_data = self._read_from_json("dms.json")
@@ -103,7 +107,7 @@ class Reader(object):
         #mpim_data = self._read_from_json("mpims.json")
         #mpim_names = [c["name"] for c in mpim_data.values()]
 
-        return self._create_messages('private_channels', mpim_names, {}) #mpim_data)
+        return self._create_messages('mpim', mpim_names, {}) #mpim_data)
 
     def compile_mpim_users(self):
         """
@@ -142,11 +146,11 @@ class Reader(object):
     # Private Methods #
     ###################
 
-    def _create_messages(self, dir, names, data, isDms=False):
+    def _create_messages(self, type, channels, data):
         """
         Creates object of arrays of messages from each json file specified by the names or ids
 
-        :param [str] names: names of each group of messages
+        :param [str] channels: names of each group of messages
 
         :param [object] data: array of objects detailing where to get the messages from in
         the directory structure
@@ -159,32 +163,21 @@ class Reader(object):
         :rtype: object
         """
 
+        dir = self._DIRS[type]
         chats = {}
         empty_dms = []
 
-        for name in names:
-
-            # gets path to dm directory that holds the json archive
-            #dir_path = os.path.join(self._PATH, name)
+        for channel in channels:
             messages = []
-            # array of all days archived
-            day_files = [name] #glob.glob(os.path.join(dir_path, "*.json"))
 
-            # this is where it's skipping the empty directories
-            if not day_files:
-                if isDms:
-                    empty_dms.append(name)
-                continue
+            with io.open(os.path.join(self._PATH, dir, channel + '.json')) as f: #, encoding="utf8") as f:
+                # loads all messages
+                channel_messages = json.load(f)
+                messages.extend([Message(self.__USER_DATA, data, type, channel, d) for d in channel_messages['messages']])
 
-            for day in sorted(day_files):
-                with io.open(os.path.join(self._PATH, dir, day + '.json')) as f: #, encoding="utf8") as f:
-                    # loads all messages
-                    day_messages = json.load(f)
-                    messages.extend([Message(self.__USER_DATA, data, d) for d in day_messages['messages']])
+            chats[channel] = messages
 
-            chats[name] = messages
-
-        if isDms:
+        if type == 'dm':
             self._EMPTY_DMS = empty_dms
 
         return chats
