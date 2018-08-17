@@ -34,7 +34,7 @@ class Reader(object):
         #channel_data = self._read_from_json("channels.json")
         #channel_names = [c["name"] for c in channel_data.values()]
 
-        return self._create_messages('channels', channel_names, None) #channel_data)
+        return self._create_messages('channels', channel_names, {}) #channel_data)
 
     def compile_groups(self):
         group_names = os.listdir(os.path.join(self._PATH, 'private_channels'))
@@ -44,12 +44,12 @@ class Reader(object):
         #group_data = self._read_from_json("groups.json")
         #group_names = [c["name"] for c in group_data.values()]
 
-        return self._create_messages('private_channels', group_names, None) #group_data)
+        return self._create_messages('private_channels', group_names, {}) #group_data)
 
     def compile_dm_messages(self):
         dm_names = os.listdir(os.path.join(self._PATH, 'direct_messages'))
         dm_names = [os.path.splitext(x)[0] for x in dm_names]
-        return self._create_messages('direct_messages', dm_names, None, True)
+        return self._create_messages('direct_messages', dm_names, {}, True)
 
         ## Gets list of dm objects with dm ID and array of members ids
         #dm_data = self._read_from_json("dms.json")
@@ -103,7 +103,7 @@ class Reader(object):
         #mpim_data = self._read_from_json("mpims.json")
         #mpim_names = [c["name"] for c in mpim_data.values()]
 
-        return self._create_messages('private_channels', mpim_names, None) #mpim_data)
+        return self._create_messages('private_channels', mpim_names, {}) #mpim_data)
 
     def compile_mpim_users(self):
         """
