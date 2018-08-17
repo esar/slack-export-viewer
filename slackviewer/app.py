@@ -1,5 +1,6 @@
 import flask
 import re
+import itertools
 
 
 app = flask.Flask(
@@ -84,8 +85,10 @@ def index():
 
 @app.route("/", methods=["POST"])
 def search_post():
-    channels = list(flask._app_ctx_stack.channels.keys())
-    groups = list(flask._app_ctx_stack.groups.keys())
+    channels = flask._app_ctx_stack.channels
+    groups = flask._app_ctx_stack.groups
+    dms = flask._app_ctx_stack.dms
+    mpims = flask._app_ctx_stack.mpims
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
@@ -93,14 +96,15 @@ def search_post():
     pattern = flask.request.form['pattern']
     if len(pattern) > 0:
       regex = re.compile(pattern, re.IGNORECASE)
-      for channel in flask._app_ctx_stack.channels.values():
-          for message in channel:
-              if regex.search(message.raw):
-                  matches.append(message)
+      for channelCollection in [channels, groups, dms, mpims]:
+          for channel in channelCollection.values():
+              for message in channel:
+                  if regex.search(message.raw):
+                      matches.append(message)
 
     return flask.render_template("viewer.html", messages=matches,
-                                 channels=sorted(channels),
-                                 groups=sorted(groups),
+                                 channels=sorted(list(channels.keys())),
+                                 groups=sorted(list(groups.keys())),
                                  dm_users=dm_users,
                                  mpim_users=mpim_users,
                                  pattern=pattern)
