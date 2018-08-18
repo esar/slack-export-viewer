@@ -9,11 +9,12 @@ from slackviewer.reader import Reader
 from slackviewer.utils.click import envvar, flag_ennvar
 
 
-def configure_app(app, archive, debug):
+def configure_app(app, archive, debug, newest_first):
     app.debug = debug
     if app.debug:
         print("WARNING: DEBUG MODE IS ENABLED!")
     app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["NEWEST_FIRST"] = newest_first
 
     path = archive #extract_archive(archive)
     reader = Reader(path)
@@ -43,11 +44,13 @@ def configure_app(app, archive, debug):
               help="Runs in 'test' mode, i.e., this will do an archive extract, but will not start the server,"
                    " and immediately quit.")
 @click.option('--debug', is_flag=True, default=flag_ennvar("FLASK_DEBUG"))
-def main(port, archive, ip, no_browser, test, debug):
+@click.option('--newest-first', is_flag=True, default=flag_ennvar("SEV_NEWEST_FIRST"))
+
+def main(port, archive, ip, no_browser, test, debug, newest_first):
     if not archive:
         raise ValueError("Empty path provided for archive")
 
-    configure_app(app, archive, debug)
+    configure_app(app, archive, debug, newest_first)
 
     if not no_browser and not test:
         webbrowser.open("http://{}:{}".format(ip, port))

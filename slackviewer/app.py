@@ -14,12 +14,16 @@ app = flask.Flask(
 @app.route("/channel/<name>/")
 def channel_name(name):
     messages = flask._app_ctx_stack.channels[name]
+    if not app.config["NEWEST_FIRST"]:
+        messages = sorted(messages, key=operator.attrgetter('datetime'))
     channels = list(flask._app_ctx_stack.channels.keys())
     groups = list(flask._app_ctx_stack.groups.keys())
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
-    return flask.render_template("viewer.html", messages=messages,
+    return flask.render_template("viewer.html", 
+                                 newest_first=app.config["NEWEST_FIRST"],
+                                 messages=messages,
                                  name=name.format(name=name),
                                  channels=sorted(channels),
                                  groups=sorted(groups),
@@ -30,12 +34,16 @@ def channel_name(name):
 @app.route("/group/<name>/")
 def group_name(name):
     messages = flask._app_ctx_stack.groups[name]
+    if not app.config["NEWEST_FIRST"]:
+        messages = sorted(messages, key=operator.attrgetter('datetime'))
     channels = list(flask._app_ctx_stack.channels.keys())
     groups = list(flask._app_ctx_stack.groups.keys())
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
-    return flask.render_template("viewer.html", messages=messages,
+    return flask.render_template("viewer.html", 
+                                 newest_first=app.config["NEWEST_FIRST"],
+                                 messages=messages,
                                  name=name.format(name=name),
                                  channels=sorted(channels),
                                  groups=sorted(groups),
@@ -46,12 +54,16 @@ def group_name(name):
 @app.route("/dm/<id>/")
 def dm_id(id):
     messages = flask._app_ctx_stack.dms[id]
+    if not app.config["NEWEST_FIRST"]:
+        messages = sorted(messages, key=operator.attrgetter('datetime'))
     channels = list(flask._app_ctx_stack.channels.keys())
     groups = list(flask._app_ctx_stack.groups.keys())
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
-    return flask.render_template("viewer.html", messages=messages,
+    return flask.render_template("viewer.html", 
+                                 newest_first=app.config["NEWEST_FIRST"],
+                                 messages=messages,
                                  id=id.format(id=id),
                                  channels=sorted(channels),
                                  groups=sorted(groups),
@@ -62,12 +74,16 @@ def dm_id(id):
 @app.route("/mpim/<name>/")
 def mpim_name(name):
     messages = flask._app_ctx_stack.mpims[name]
+    if not app.config["NEWEST_FIRST"]:
+        messages = sorted(messages, key=operator.attrgetter('datetime'))
     channels = list(flask._app_ctx_stack.channels.keys())
     groups = list(flask._app_ctx_stack.groups.keys())
     dm_users = list(flask._app_ctx_stack.dm_users)
     mpim_users = list(flask._app_ctx_stack.mpim_users)
 
-    return flask.render_template("viewer.html", messages=messages,
+    return flask.render_template("viewer.html", 
+                                 newest_first=app.config["NEWEST_FIRST"],
+                                 messages=messages,
                                  name=name.format(name=name),
                                  channels=sorted(channels),
                                  groups=sorted(groups),
@@ -77,11 +93,14 @@ def mpim_name(name):
 
 @app.route("/")
 def index():
-    channels = list(flask._app_ctx_stack.channels.keys())
-    if "general" in channels:
-        return channel_name("general")
+    channels = sorted(list(flask._app_ctx_stack.channels.keys()))
+    channel = "general"
+    if not channel in channels:
+        channel = channels[0]
+    if app.config["NEWEST_FIRST"]:
+        return channel_name(channel)
     else:
-        return channel_name(channels[0])
+        return flask.render_template("redirect.html", url="/channel/%s#end" % channel)
 
 
 @app.route("/", methods=["POST"])
